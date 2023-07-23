@@ -2,6 +2,8 @@ const express=require("express");
 
 const dbConnect=require("./config/dbConnect");
 const { notFound, errorHandler } = require("./middleware/errorMiddleware");
+const morgan=require("morgan")
+const userRouter=require("./routes/userRoute")
 
 require("dotenv").config();
 
@@ -9,8 +11,16 @@ const app=express();
 
 //connect to database
 dbConnect();
+//setup morgan
+app.use(morgan("dev"))
+//setup body parser
+app.use(express.json())
+
+//setup user routes
+app.use("/api/user",userRouter)
 
 
+//setup error handler
 app.use(notFound)
 app.use(errorHandler)
 
