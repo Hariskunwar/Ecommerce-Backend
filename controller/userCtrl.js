@@ -19,7 +19,24 @@ const registerUser=asyncHandler(async (req,res)=>{
     }
 });
 
+//user login 
+const userLogin=asyncHandler(async (req,res)=>{
+    const {email,password}=req.body;
+    //first check user exist or not with the help of email
+    const user=await User.findOne({email:email});
+    //if user found and password matched, generate token
+    if(user && (await user.isPasswordMatched(password))){
+        res.status(200).json({
+            username:user?.name,
+            token:generateToken(user?._id)
+        })
+    }else{
+        res.status(401);
+        throw new Error("Invalid credentials")
+    }
+})
+
 
 module.exports={
-    registerUser
+    registerUser,userLogin
 }
