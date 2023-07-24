@@ -48,7 +48,21 @@ const getAllUser=asyncHandler(async (req,res)=>{
     res.status(200).json(users)
 })
 
+//get single user
+const getUser=asyncHandler(async (req,res)=>{
+    const {id}=req.params;
+    const user=await User.findById(id);
+    res.status(200).json({
+        userId:user._id,
+        username:user.name,
+        email:user.email,
+        mobile:user.mobile,
+        isAdmin:user.isAdmin,
+        registerationDate:user.createdAt
+    })
+})
+
 
 module.exports={
-    registerUser,userLogin,getAllUser
+    registerUser,userLogin,getAllUser,getUser
 }
