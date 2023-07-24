@@ -1,5 +1,5 @@
 const express=require("express");
-const { registerUser, userLogin, getAllUser, getUser } = require("../controller/userCtrl");
+const { registerUser, userLogin, getAllUser, getUser, updateUser } = require("../controller/userCtrl");
 const { authMiddleware, isAdmin } = require("../middleware/authMiddleware");
 
 const router=express.Router();
@@ -13,6 +13,9 @@ router.post("/login",userLogin)
 router.get("/all-user",authMiddleware,isAdmin,getAllUser)
 //get single user route
 router.get("/:id",authMiddleware,isAdmin,getUser)
+
+//update user profile route
+router.put("/update",authMiddleware,updateUser)
 
 
 module.exports=router;

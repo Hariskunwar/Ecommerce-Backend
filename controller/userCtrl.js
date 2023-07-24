@@ -62,7 +62,23 @@ const getUser=asyncHandler(async (req,res)=>{
     })
 })
 
+//user profile update
+const updateUser=asyncHandler(async(req,res)=>{
+    const {_id}=req.user;
+    const user=await User.findByIdAndUpdate(_id,{
+        name:req.body.name,
+        email:req.body.email,
+        mobile:req.body.mobile
+    },{new:true})
+    res.status(200).json({
+        userId:user._id,
+        username:user.name,
+        email:user.email,
+        mobile:user.email
+    })
+})
+
 
 module.exports={
-    registerUser,userLogin,getAllUser,getUser
+    registerUser,userLogin,getAllUser,getUser,updateUser
 }
