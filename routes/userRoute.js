@@ -1,5 +1,5 @@
 const express=require("express");
-const { registerUser, userLogin, getAllUser, getUser, updateUser } = require("../controller/userCtrl");
+const { registerUser, userLogin, getAllUser, getUser, updateUser, deleteUser } = require("../controller/userCtrl");
 const { authMiddleware, isAdmin } = require("../middleware/authMiddleware");
 
 const router=express.Router();
@@ -16,6 +16,12 @@ router.get("/:id",authMiddleware,isAdmin,getUser)
 
 //update user profile route
 router.put("/update",authMiddleware,updateUser)
+
+//route for user deleting their own account
+router.delete('/delete', authMiddleware, deleteUser);
+//route for admin deleting user accounts
+router.delete('/admin/:id', authMiddleware,isAdmin, deleteUser);
+
 
 
 module.exports=router;
