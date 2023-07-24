@@ -36,7 +36,19 @@ const userLogin=asyncHandler(async (req,res)=>{
     }
 })
 
+//get all user
+const getAllUser=asyncHandler(async (req,res)=>{
+    const allUser=await User.find()
+    const users=allUser.map((user)=>({
+        userId:user._id,
+        username:user.name,
+        email:user.email,
+        mobile:user.mobile
+    }))
+    res.status(200).json(users)
+})
+
 
 module.exports={
-    registerUser,userLogin
+    registerUser,userLogin,getAllUser
 }
