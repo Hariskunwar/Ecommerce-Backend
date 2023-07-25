@@ -1,6 +1,8 @@
 const User = require("../models/userModel");
 const asyncHandler = require("express-async-handler");
 const { generateToken } = require("../utils/jwtToken");
+const crypto=require("crypto");
+const sendEmail = require("./emailCtrl");
 
 //register a user
 const registerUser = asyncHandler(async (req, res) => {
@@ -133,8 +135,48 @@ const deleteUser = asyncHandler(async (req, res) => {
         }
     })
 
+    //generate forget password token
+    const forgetPasswordToken=asyncHandler(async (req,res)=>{
+        const {email}=req.body;
+        const user=await User.findOne({email:email});
+        if(!user){
+            res.status(404)
+            throw new Error("User not exist with this email");
+        }
+        const token=await user.createPasswordResetToken();
+        await user.save();
+        const resetLink=`http://localhost:8080/api/user/reset-password/${token}`;
+        let data={
+            to:email,
+            text:`Hello ${user.name}`,
+            subject:"forget password",
+            html:resetLink
+
+        }
+        sendEmail(data)
+        res.status(200).json(resetLink)
+    });
+
+    //reset password using token
+    const resetPassword=asyncHandler(async (req,res)=>{
+        const {password}=req.body;
+        const {token}=req.params;
+        const hashedToken=crypto.createHash("sha256").update(token).digest("hex");
+        const user=await User.findOne({passwordResetToken:hashedToken,passwordResetTokenExpires:{$gt:Date.now()}});
+        if(!user){
+            res.status(403);
+            throw new Error("token expired, please send request for new token");
+        }
+        user.password=password;
+        user.passwordResetToken=undefined;
+        user.passwordResetTokenExpires=undefined;
+        await user.save();
+        res.status(200).json("password reset successful");
+    });
+
+
 
 module.exports = {
     registerUser, userLogin, getAllUser, getUser, updateUser, deleteUser,
-    blockUser,unBlockUser,updatePassword
+    blockUser,unBlockUser,updatePassword,forgetPasswordToken,resetPassword
 }
