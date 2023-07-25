@@ -115,10 +115,26 @@ const deleteUser = asyncHandler(async (req, res) => {
         const {id}=req.params;
         const unblock=await User.findByIdAndUpdate(id,{isBlocked:false},{new:true})
         res.status(200).json({message:"user unblocked successfully"})
+    });
+
+    //update password 
+    const updatePassword=asyncHandler(async (req,res)=>{
+        const {_id}=req.user;
+        const {password}=req.body;
+        const user=await User.findById(_id)
+        if(user&&password&&(await user.isPasswordMatched(password))){
+            res.status(400)
+            throw new Error("please provide new password instead of old")
+
+        }else{
+            user.password=password;
+            await user.save();
+            res.status(200).json("password update succussfully");
+        }
     })
 
 
 module.exports = {
     registerUser, userLogin, getAllUser, getUser, updateUser, deleteUser,
-    blockUser,unBlockUser
+    blockUser,unBlockUser,updatePassword
 }

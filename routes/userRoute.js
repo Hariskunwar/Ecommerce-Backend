@@ -1,5 +1,5 @@
 const express=require("express");
-const { registerUser, userLogin, getAllUser, getUser, updateUser, deleteUser, blockUser, unBlockUser } = require("../controller/userCtrl");
+const { registerUser, userLogin, getAllUser, getUser, updateUser, deleteUser, blockUser, unBlockUser, updatePassword } = require("../controller/userCtrl");
 const { authMiddleware, isAdmin } = require("../middleware/authMiddleware");
 
 const router=express.Router();
@@ -20,6 +20,8 @@ router.put("/update",authMiddleware,updateUser)
 router.put("/block/:id",authMiddleware,isAdmin,blockUser)
 //user unblocking route
 router.put("/unblock/:id",authMiddleware,isAdmin,unBlockUser)
+//password update route
+router.put("/password-update",authMiddleware,updatePassword)
 
 //route for user deleting their own account
 router.delete('/delete', authMiddleware, deleteUser);
