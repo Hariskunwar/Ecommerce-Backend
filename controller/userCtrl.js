@@ -54,16 +54,33 @@ const handleRefresToken=asyncHandler(async (req,res)=>{
         throw new Error("no refresh token in cookie");
     } 
     const refreshToken=cookie.refreshToken;
-    const user=await User.find({refreshToken:refreshToken});
+    const user=await User.findOne({refreshToken:refreshToken});
     if(!user) {
         res.status(403)
         throw new Error("refresh token not matched")
     }
     jwt.verify(refreshToken,process.env.JWT_SECRET,(err,decoded)=>{
-        if(err||user.id==decoded.id) throw new Error("something went wrong with refresh token");
-        const accessToken=generateToken(user.id)
+        if(err||user.id!==decoded.id) throw new Error("something went wrong with refresh token");
+        const accessToken=generateToken(user._id)
         res.json({accessToken});
     })
+
+})
+
+//logout functionality
+
+const logout=asyncHandler(async (req,res)=>{
+    const cookie=req.cookies;
+    if(!cookie?.refreshToken) throw new Error("No refresh token in cookies")
+    const refreshToken=cookie.refreshToken;
+    const user=await User.findOne({refreshToken});
+    if(!user){
+        res.clearCookie('refreshToken',{httpOnly:true, secure:true});
+        res.sendStatus(204); 
+    }
+    await User.findOneAndUpdate({refreshToken},{refreshToken:" "});
+    res.clearCookie("refreshToken",{httpOnly:true,secure:true});
+    res.sendStatus(204)
 
 })
 
@@ -208,5 +225,5 @@ const deleteUser = asyncHandler(async (req, res) => {
 module.exports = {
     registerUser, userLogin, getAllUser, getUser, updateUser, deleteUser,
     blockUser,unBlockUser,updatePassword,forgetPasswordToken,resetPassword,
-    handleRefresToken
+    handleRefresToken,logout
 }
