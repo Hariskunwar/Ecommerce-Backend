@@ -4,10 +4,12 @@ const dbConnect=require("./config/dbConnect");
 const { notFound, errorHandler } = require("./middleware/errorMiddleware");
 const morgan=require("morgan")
 const userRouter=require("./routes/userRoute")
+const cookieParser=require("cookie-parser");
 
 require("dotenv").config();
 
 const app=express();
+
 
 //connect to database
 dbConnect();
@@ -15,6 +17,8 @@ dbConnect();
 app.use(morgan("dev"))
 //setup body parser
 app.use(express.json())
+//set up cookie parser
+app.use(cookieParser());
 
 //setup user routes
 app.use("/api/user",userRouter)

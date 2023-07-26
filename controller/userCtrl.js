@@ -3,6 +3,8 @@ const asyncHandler = require("express-async-handler");
 const { generateToken } = require("../utils/jwtToken");
 const crypto=require("crypto");
 const sendEmail = require("./emailCtrl");
+const generateRefreshToken=require("../utils/refreshToken")
+const jwt=require("jsonwebtoken")
 
 //register a user
 const registerUser = asyncHandler(async (req, res) => {
@@ -28,6 +30,12 @@ const userLogin = asyncHandler(async (req, res) => {
     const user = await User.findOne({ email: email });
     //if user found and password matched, generate token
     if (user && (await user.isPasswordMatched(password))) {
+        const refreshToken=await generateRefreshToken(user.id)
+        const updateUser=await User.findByIdAndUpdate(user.id,
+            {refreshToken:refreshToken},{new:true});
+            
+            res.cookie("refreshToken",refreshToken,{httpOnly:true,maxAge:72*60*60*1000});
+
         res.status(200).json({
             username: user?.name,
             token: generateToken(user?._id)
@@ -36,6 +44,27 @@ const userLogin = asyncHandler(async (req, res) => {
         res.status(401);
         throw new Error("Invalid credentials")
     }
+})
+
+//handle refresh token
+const handleRefresToken=asyncHandler(async (req,res)=>{
+    const cookie=req.cookies;
+    if(!cookie){
+        res.status(401);
+        throw new Error("no refresh token in cookie");
+    } 
+    const refreshToken=cookie.refreshToken;
+    const user=await User.find({refreshToken:refreshToken});
+    if(!user) {
+        res.status(403)
+        throw new Error("refresh token not matched")
+    }
+    jwt.verify(refreshToken,process.env.JWT_SECRET,(err,decoded)=>{
+        if(err||user.id==decoded.id) throw new Error("something went wrong with refresh token");
+        const accessToken=generateToken(user.id)
+        res.json({accessToken});
+    })
+
 })
 
 //get all user
@@ -178,5 +207,6 @@ const deleteUser = asyncHandler(async (req, res) => {
 
 module.exports = {
     registerUser, userLogin, getAllUser, getUser, updateUser, deleteUser,
-    blockUser,unBlockUser,updatePassword,forgetPasswordToken,resetPassword
+    blockUser,unBlockUser,updatePassword,forgetPasswordToken,resetPassword,
+    handleRefresToken
 }

@@ -1,5 +1,5 @@
 const express=require("express");
-const { registerUser, userLogin, getAllUser, getUser, updateUser, deleteUser, blockUser, unBlockUser, updatePassword, forgetPasswordToken, resetPassword } = require("../controller/userCtrl");
+const { registerUser, userLogin, getAllUser, getUser, updateUser, deleteUser, blockUser, unBlockUser, updatePassword, forgetPasswordToken, resetPassword, handleRefresToken } = require("../controller/userCtrl");
 const { authMiddleware, isAdmin } = require("../middleware/authMiddleware");
 
 const router=express.Router();
@@ -13,8 +13,11 @@ router.post("/forgot-password",forgetPasswordToken)
 
 //get all user route:only logged in user who is admin can get all user
 router.get("/all-user",authMiddleware,isAdmin,getAllUser)
+//route to handle refresh token
+router.get('/refresh',handleRefresToken);
 //get single user route
 router.get("/:id",authMiddleware,isAdmin,getUser)
+
 
 //update user profile route
 router.put("/update",authMiddleware,updateUser)
