@@ -4,7 +4,9 @@ const dbConnect=require("./config/dbConnect");
 const { notFound, errorHandler } = require("./middleware/errorMiddleware");
 const morgan=require("morgan")
 const userRouter=require("./routes/userRoute")
+const productRoute=require("./routes/productRoute")
 const cookieParser=require("cookie-parser");
+
 
 require("dotenv").config();
 
@@ -22,7 +24,8 @@ app.use(cookieParser());
 
 //setup user routes
 app.use("/api/user",userRouter)
-
+//setup product route
+app.use("/api/product",productRoute)
 
 //setup error handler
 app.use(notFound)
