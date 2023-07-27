@@ -33,13 +33,14 @@ const getProduct=asyncHandler(async (req,res)=>{
 
 //get all product
 const getAllProduct=asyncHandler(async (req,res)=>{
-    const allProduct=await Product.find();
-    const products=allProduct.map((product)=>({
-         title:product.title,
-         price:product.price,
-         catgory:product.category
-    }));
-    res.status(200).json({products})
+    const queryObj={...req.query}
+    const excludeFields=['page','sort','limit','fields']
+    excludeFields.forEach(el=>delete queryObj[el]);
+    let queryStr=JSON.stringify(queryObj);
+    queryStr=queryStr.replace(/\b(gte|gt|lte|lt)\b/g,match=>`$${match}`)
+    let query=Product.find(JSON.parse(queryStr))
+    const products=await query;
+    res.status(200).json(products);
 });
 
 //product update 
