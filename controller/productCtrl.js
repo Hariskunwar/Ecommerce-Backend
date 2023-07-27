@@ -29,9 +29,20 @@ const getProduct=asyncHandler(async (req,res)=>{
     else{
         res.status(404).json({message:"product not found"});
     }
-})
+});
+
+//get all product
+const getAllProduct=asyncHandler(async (req,res)=>{
+    const allProduct=await Product.find();
+    const products=allProduct.map((product)=>({
+         title:product.title,
+         price:product.price,
+         catgory:product.category
+    }));
+    res.status(200).json({products})
+});
 
 
 module.exports={
-    createProduct,getProduct
+    createProduct,getProduct,getAllProduct
 };
