@@ -42,7 +42,25 @@ const getAllProduct=asyncHandler(async (req,res)=>{
     res.status(200).json({products})
 });
 
+//product update 
+const productUpdate=asyncHandler(async (req,res)=>{
+    const {id}=req.params;
+    if(req.body.title){
+        req.body.slug=slugify(req.body.title)
+    }
+    const updatedProduct=await Product.findByIdAndUpdate(id,req.body,{new:true})
+    res.status(200).json(updatedProduct)
+})
+
+//delete a product
+const deleteProduct=asyncHandler(async (req,res)=>{
+    const {id}=req.params;
+    const deletedProduct=await Product.findByIdAndDelete(id);
+    res.status(200).json(deletedProduct)
+})
+
 
 module.exports={
-    createProduct,getProduct,getAllProduct
+    createProduct,getProduct,getAllProduct,productUpdate,
+    deleteProduct
 };
