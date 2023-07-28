@@ -106,8 +106,37 @@ const addToWishlist=asyncHandler(async (req,res)=>{
     }
 })
 
+//product rating
+const rating=asyncHandler(async (req,res)=>{
+    const {_id}=req.user;
+    const {star,comment,prodId}=req.body;
+    
+        //with prodId find the product
+        const product=await Product.findById(prodId)
+        //find user already rated or not
+        const alreadyRated=product.ratings.find((userId)=>userId.ratedBy.toString()===_id.toString())
+        if(alreadyRated){
+            const updateRating=await Product.updateOne({
+                ratings:{$elemMatch:alreadyRated}},
+                {$set:{"ratings.$.star":star}}
+            );
+            res.json(updateRating)
+            
+        }else{
+            const rateProduct=await Product.findByIdAndUpdate(prodId,{
+                $push:{
+                    ratings:{
+                        star:star,
+                        
+                        ratedBy:_id,
+                    },
+                },
+            },{new:true});
+           res.json(rateProduct)
+        }
+    })
 
 module.exports={
     createProduct,getProduct,getAllProduct,productUpdate,
-    deleteProduct,addToWishlist
+    deleteProduct,addToWishlist,rating
 };
