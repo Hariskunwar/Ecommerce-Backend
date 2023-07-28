@@ -1,5 +1,5 @@
 const express=require("express");
-const { registerUser, userLogin, getAllUser, getUser, updateUser, deleteUser, blockUser, unBlockUser, updatePassword, forgetPasswordToken, resetPassword, handleRefresToken, logout } = require("../controller/userCtrl");
+const { registerUser, userLogin, getAllUser, getUser, updateUser, deleteUser, blockUser, unBlockUser, updatePassword, forgetPasswordToken, resetPassword, handleRefresToken, logout, getWishlist } = require("../controller/userCtrl");
 const { authMiddleware, isAdmin } = require("../middleware/authMiddleware");
 
 const router=express.Router();
@@ -17,6 +17,8 @@ router.get("/all-user",authMiddleware,isAdmin,getAllUser)
 router.get('/refresh',handleRefresToken);
 //route for logout
 router.get("/logout",logout)
+//get user wishlist route
+router.get("/wishlist",authMiddleware,getWishlist)
 //get single user route
 router.get("/:id",authMiddleware,isAdmin,getUser)
 

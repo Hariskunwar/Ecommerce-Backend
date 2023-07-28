@@ -220,10 +220,16 @@ const deleteUser = asyncHandler(async (req, res) => {
         res.status(200).json("password reset successful");
     });
 
+    //get user wishlist
+    const getWishlist=asyncHandler(async (req,res)=>{
+        const {_id}=req.user;
+        const findUser=await User.findById(_id).populate("wishlist")
+        res.json(findUser);
+    })
 
 
 module.exports = {
     registerUser, userLogin, getAllUser, getUser, updateUser, deleteUser,
     blockUser,unBlockUser,updatePassword,forgetPasswordToken,resetPassword,
-    handleRefresToken,logout
+    handleRefresToken,logout,getWishlist
 }
