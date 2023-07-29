@@ -1,5 +1,5 @@
 const express=require("express");
-const { registerUser, userLogin, getAllUser, getUser, updateUser, deleteUser, blockUser, unBlockUser, updatePassword, forgetPasswordToken, resetPassword, handleRefresToken, logout, getWishlist } = require("../controller/userCtrl");
+const { registerUser, userLogin, getAllUser, getUser, updateUser, deleteUser, blockUser, unBlockUser, updatePassword, forgetPasswordToken, resetPassword, handleRefresToken, logout, getWishlist, userCart, getUserCart, emptyCart } = require("../controller/userCtrl");
 const { authMiddleware, isAdmin } = require("../middleware/authMiddleware");
 
 const router=express.Router();
@@ -8,6 +8,8 @@ const router=express.Router();
 router.post("/register",registerUser)
 //route for user login
 router.post("/login",userLogin)
+//create cart route
+router.post("/cart",authMiddleware,userCart)
 //route to generate forgot password token
 router.post("/forgot-password",forgetPasswordToken)
 
@@ -19,6 +21,8 @@ router.get('/refresh',handleRefresToken);
 router.get("/logout",logout)
 //get user wishlist route
 router.get("/wishlist",authMiddleware,getWishlist)
+//get user cart route
+router.get("/get-cart",authMiddleware,getUserCart)
 //get single user route
 router.get("/:id",authMiddleware,isAdmin,getUser)
 
@@ -33,7 +37,9 @@ router.put("/unblock/:id",authMiddleware,isAdmin,unBlockUser)
 router.put("/password-update",authMiddleware,updatePassword)
 //route for password reset
 router.put("/password-reset/:token",resetPassword)
-
+ 
+//remove user cart route
+router.delete("/empty-cart",authMiddleware,emptyCart)
 //route for user deleting their own account
 router.delete('/delete', authMiddleware, deleteUser);
 //route for admin deleting user accounts

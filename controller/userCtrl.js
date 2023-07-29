@@ -5,6 +5,10 @@ const crypto=require("crypto");
 const sendEmail = require("./emailCtrl");
 const generateRefreshToken=require("../utils/refreshToken")
 const jwt=require("jsonwebtoken")
+const Product=require("../models/productModel")
+const Cart=require("../models/cartModel");
+const { log } = require("console");
+const { authMiddleware } = require("../middleware/authMiddleware");
 
 //register a user
 const registerUser = asyncHandler(async (req, res) => {
@@ -227,9 +231,51 @@ const deleteUser = asyncHandler(async (req, res) => {
         res.json(findUser);
     })
 
+    //create user cart
+    const userCart=asyncHandler(async (req,res)=>{
+        const {cart}=req.body;
+        const {_id}=req.user;
+        let products=[];
+        const user=await User.findById(_id);
+        //check if user already have product in cart
+        const alreadyExistCart=await Cart.findOne({orderBy:user._id})
+        if(alreadyExistCart)  throw new Error("First empty the cart")
+        for(let i=0;i<cart.length;i++){
+            let object={}
+            object.product=cart[i].id;
+            object.count=cart[i].count;
+            object.color=cart[i].color;
+            let getPrice=await Product.findById(cart[i].id).select("price").exec();
+            object.price=getPrice.price;
+            products.push(object);
+
+        }
+        //calculate cart total
+        let cartTotal=0;
+        for(let i=0;i<products.length;i++){
+            cartTotal=cartTotal+products[i].price*products[i].count;
+        }
+        //save cart to database
+        let newCart=await new Cart({products,cartTotal:cartTotal,orderBy:user._id}).save();
+        res.json(newCart)
+    });
+
+    //get user cart
+    const getUserCart=asyncHandler(async (req,res)=>{
+        const {_id}=req.user;
+        const cart=await Cart.findOne({orderBy:_id}).populate("products.product");
+        res.json(cart)
+    })
+    //make cart empty
+    const emptyCart=asyncHandler(async (req,res)=>{
+        const {_id}=req.user;
+        const user=await User.findById(_id);
+        await Cart.findOneAndRemove({orderBy:user._id});
+        res.json("cart is empty");
+    })
 
 module.exports = {
     registerUser, userLogin, getAllUser, getUser, updateUser, deleteUser,
     blockUser,unBlockUser,updatePassword,forgetPasswordToken,resetPassword,
-    handleRefresToken,logout,getWishlist
+    handleRefresToken,logout,getWishlist,userCart,getUserCart,emptyCart
 }
