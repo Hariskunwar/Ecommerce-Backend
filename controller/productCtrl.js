@@ -120,7 +120,7 @@ const rating=asyncHandler(async (req,res)=>{
                 ratings:{$elemMatch:alreadyRated}},
                 {$set:{"ratings.$.star":star}}
             );
-            res.json(updateRating)
+          
             
         }else{
             const rateProduct=await Product.findByIdAndUpdate(prodId,{
@@ -132,8 +132,19 @@ const rating=asyncHandler(async (req,res)=>{
                     },
                 },
             },{new:true});
-           res.json(rateProduct)
+         
         }
+        //find average rating of product
+        //find product
+        const getProduct=await Product.findById(prodId);
+        //find number of user who have rated the product
+        let totalUser=getProduct.ratings.length;
+        //find sum of the rating
+        let ratingSum=getProduct.ratings.map((item)=>item.star).reduce((prev,curr)=>prev+curr,0)
+        //find average of traitng
+        let averageRating=Math.round(ratingSum/totalUser);
+        let finalProduct=await Product.findByIdAndUpdate(prodId,{totalRating:averageRating},{new:true});
+        res.json(finalProduct)
     })
 
 module.exports={
