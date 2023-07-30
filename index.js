@@ -7,6 +7,7 @@ const userRouter=require("./routes/userRoute")
 const productRoute=require("./routes/productRoute")
 const categoryRoute=require("./routes/categoryRoute")
 const brandRoute=require("./routes/brandRoute")
+const couponRoute=require("./routes/couponRoute")
 const cookieParser=require("cookie-parser");
 
 
@@ -32,6 +33,8 @@ app.use("/api/product",productRoute)
 app.use("/api/category",categoryRoute)
 //set up brand route
 app.use("/api/brand",brandRoute)
+//set up coupon route
+app.use("/api/coupon",couponRoute)
 
 //setup error handler
 app.use(notFound)

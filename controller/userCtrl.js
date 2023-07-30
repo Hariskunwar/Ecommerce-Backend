@@ -7,8 +7,8 @@ const generateRefreshToken=require("../utils/refreshToken")
 const jwt=require("jsonwebtoken")
 const Product=require("../models/productModel")
 const Cart=require("../models/cartModel");
-const { log } = require("console");
-const { authMiddleware } = require("../middleware/authMiddleware");
+const Coupon=require("../models/couponModel");
+
 
 //register a user
 const registerUser = asyncHandler(async (req, res) => {
@@ -272,10 +272,23 @@ const deleteUser = asyncHandler(async (req, res) => {
         const user=await User.findById(_id);
         await Cart.findOneAndRemove({orderBy:user._id});
         res.json("cart is empty");
+    }); 
+
+    //apply coupon to cart
+    const applyCoupon=asyncHandler(async (req,res)=>{
+        const {coupon}=req.body;
+        const {_id}=req.user;
+        const validCoupon=await Coupon.findOne({name:coupon});
+      if(validCoupon==null) throw new Error("Invalid coupon");
+      const user=await User.findOne({_id});
+      let {products,cartTotal}=await Cart.findOne({orderBy:user._id}).populate("products.product");
+      let totalAfterDiscount=(cartTotal-(cartTotal*validCoupon.discount)/100).toFixed(2);
+      await Cart.findOneAndUpdate({orderBy:user._id},{totalAfterDiscount:totalAfterDiscount});
+      res.json(totalAfterDiscount)
     })
 
 module.exports = {
     registerUser, userLogin, getAllUser, getUser, updateUser, deleteUser,
     blockUser,unBlockUser,updatePassword,forgetPasswordToken,resetPassword,
-    handleRefresToken,logout,getWishlist,userCart,getUserCart,emptyCart
+    handleRefresToken,logout,getWishlist,userCart,getUserCart,emptyCart,applyCoupon
 }
