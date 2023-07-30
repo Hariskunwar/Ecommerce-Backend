@@ -9,6 +9,7 @@ const categoryRoute=require("./routes/categoryRoute")
 const brandRoute=require("./routes/brandRoute")
 const couponRoute=require("./routes/couponRoute")
 const cookieParser=require("cookie-parser");
+const rateLimiter=require("./utils/rateLimiter")
 
 
 require("dotenv").config();
@@ -24,6 +25,10 @@ app.use(morgan("dev"))
 app.use(express.json())
 //set up cookie parser
 app.use(cookieParser());
+
+//set up rate limiter
+app.use("/api",rateLimiter(60*60*1000,50,"Stop Requesting"))
+
 
 //setup user routes
 app.use("/api/user",userRouter)
