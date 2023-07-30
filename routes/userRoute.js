@@ -1,5 +1,5 @@
 const express=require("express");
-const { registerUser, userLogin, getAllUser, getUser, updateUser, deleteUser, blockUser, unBlockUser, updatePassword, forgetPasswordToken, resetPassword, handleRefresToken, logout, getWishlist, userCart, getUserCart, emptyCart, applyCoupon } = require("../controller/userCtrl");
+const { registerUser, userLogin, getAllUser, getUser, updateUser, deleteUser, blockUser, unBlockUser, updatePassword, forgetPasswordToken, resetPassword, handleRefresToken, logout, getWishlist, userCart, getUserCart, emptyCart, applyCoupon, createOrder, getAllOrder, getOrder, updateOrderStatus } = require("../controller/userCtrl");
 const { authMiddleware, isAdmin } = require("../middleware/authMiddleware");
 
 const router=express.Router();
@@ -12,11 +12,18 @@ router.post("/login",userLogin)
 router.post("/cart",authMiddleware,userCart)
 //apply coupon route
 router.post("/apply-coupon",authMiddleware,applyCoupon)
+//make order
+router.post("/create-order",authMiddleware,createOrder)
 //route to generate forgot password token
 router.post("/forgot-password",forgetPasswordToken)
 
 //get all user route:only logged in user who is admin can get all user
 router.get("/all-user",authMiddleware,isAdmin,getAllUser)
+//get order
+router.get("/get-order",authMiddleware,getOrder)
+//get all order
+router.get("/order/all-order",authMiddleware,isAdmin,getAllOrder)
+
 //route to handle refresh token
 router.get('/refresh',handleRefresToken);
 //route for logout
@@ -39,6 +46,8 @@ router.put("/unblock/:id",authMiddleware,isAdmin,unBlockUser)
 router.put("/password-update",authMiddleware,updatePassword)
 //route for password reset
 router.put("/password-reset/:token",resetPassword)
+//update user status
+router.put("/update-order/:id",authMiddleware,isAdmin,updateOrderStatus)
  
 //remove user cart route
 router.delete("/empty-cart",authMiddleware,emptyCart)

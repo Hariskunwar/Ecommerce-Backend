@@ -8,6 +8,8 @@ const jwt=require("jsonwebtoken")
 const Product=require("../models/productModel")
 const Cart=require("../models/cartModel");
 const Coupon=require("../models/couponModel");
+const Order=require("../models/oderModel")
+const uniqid=require("uniqid")
 
 
 //register a user
@@ -279,16 +281,76 @@ const deleteUser = asyncHandler(async (req, res) => {
         const {coupon}=req.body;
         const {_id}=req.user;
         const validCoupon=await Coupon.findOne({name:coupon});
-      if(validCoupon==null) throw new Error("Invalid coupon");
+      if(validCoupon==null ) throw new Error("Invalid coupon");
       const user=await User.findOne({_id});
       let {products,cartTotal}=await Cart.findOne({orderBy:user._id}).populate("products.product");
       let totalAfterDiscount=(cartTotal-(cartTotal*validCoupon.discount)/100).toFixed(2);
       await Cart.findOneAndUpdate({orderBy:user._id},{totalAfterDiscount:totalAfterDiscount});
       res.json(totalAfterDiscount)
+    });
+
+    //create order
+    const createOrder=asyncHandler(async (req,res)=>{
+        const {COD,couponApplied}=req.body;
+        const {_id}=req.user;
+        if(!COD) throw new Error("order failed");
+        const user=await User.findById(_id);
+        const userCart=await Cart.findOne({orderBy:user._id});
+        let finalAmount=0;
+        if(couponApplied&&userCart.totalAfterDiscount){
+            finalAmount=userCart.totalAfterDiscount
+        }else{
+            finalAmount=userCart.cartTotal;
+        }
+        let newOrder=await new Order({
+            products:userCart.products,
+            paymentIntent:{
+                id:uniqid(),
+                method:"COD",
+                amount:finalAmount,
+                status:"Cash On Delivery",
+                created:Date.now(),
+                currency:"NPR"
+            },
+            orderBy:user._id,
+            orderStatus:"Processing"
+        }).save();
+        //decrease the product quantity and increases the sold quantity
+        let update=userCart.products.map((item)=>{
+            return{updateOne:{
+                filter:{_id:item.product._id},
+                update:{$inc:{quantity:-item.count,sold:+item.count}}
+            }}
+        });
+    const updated=await Product.bulkWrite(update,{});
+    res.json("success");
     })
+
+    //get all oder
+    const getAllOrder=asyncHandler(async (req,res)=>{
+        const getOrders=await Order.find()
+        res.json(getOrders)
+    })
+
+    //get a  order
+    const getOrder=asyncHandler(async (req,res)=>{
+        const {_id}=req.user;
+        const order=await Order.findOne({orderBy:_id}).populate("products.product");
+        res.json(order)
+    })
+
+    //update user order
+    const updateOrderStatus=asyncHandler(async (req,res)=>{
+        const {status}=req.body
+        const {id}=req.params;
+        const findOrder=await Order.findByIdAndUpdate(id,{oderStatus:status},{new:true})
+        res.json(findOrder)
+    })
+
 
 module.exports = {
     registerUser, userLogin, getAllUser, getUser, updateUser, deleteUser,
     blockUser,unBlockUser,updatePassword,forgetPasswordToken,resetPassword,
-    handleRefresToken,logout,getWishlist,userCart,getUserCart,emptyCart,applyCoupon
+    handleRefresToken,logout,getWishlist,userCart,getUserCart,emptyCart,applyCoupon,
+    createOrder,getAllOrder,getOrder,updateOrderStatus
 }
